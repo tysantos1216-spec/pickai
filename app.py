@@ -1,13 +1,18 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import requests
 
 # Page Configuration
 st.set_page_config(page_title="Prop Value Analyzer", layout="wide")
 st.title("🏀 PrizePicks Edge Identifier")
 
-# 1. Mock Data Loading (Replace with an API call in the future)
-def get_live_props():
+# --- DATA FETCHING ---
+# We keep this simple for deployment. 
+# Replace the API_KEY with your actual key in Streamlit Secrets (Settings > Secrets)
+@st.cache_data(ttl=900) # Caches data for 15 minutes
+def get_player_stats_mock():
+    # If you haven't set up the API yet, this ensures the app doesn't crash
     data = {
         "Player": ["LeBron James", "Jayson Tatum", "Stephen Curry", "Luka Dončić"],
         "Prop_Type": ["Points", "Rebounds", "Points", "Assists"],
@@ -17,14 +22,12 @@ def get_live_props():
     }
     return pd.DataFrame(data)
 
-df = get_live_props()
+# --- MATH LOGIC ---
+df = get_player_stats_mock()
 
-# 2. Mathematical Logic
-# Calculate Edge Percentage
 df['Edge_Percentage'] = ((df['Mean_Last_10'] - df['PrizePicks_Line']) / df['PrizePicks_Line']) * 100
 df['Z_Score'] = (df['Mean_Last_10'] - df['PrizePicks_Line']) / df['Std_Dev_Last_10']
 
-# Determine Decision
 def get_decision(row):
     if row['Z_Score'] > 0.5: return "YES (Over)"
     elif row['Z_Score'] < -0.5: return "YES (Under)"
@@ -32,42 +35,17 @@ def get_decision(row):
 
 df['Decision'] = df.apply(get_decision, axis=1)
 
-# 3. UI Display
+# --- UI DISPLAY ---
+st.subheader("Live Prop Analysis")
+
+# Color formatting
 def color_decision(val):
-    if "YES" in val: return 'background-color: #2ecc71; color: white'
-    return 'background-color: #e74c3c; color: white'
+    color = '#2ecc71' if "YES" in val else '#e74c3c'
+    return f'background-color: {color}; color: white'
 
-# Display Table
-#st.dataframe(df.style.map(color_decision, subset=['Decision']))
+# Use st.dataframe with mapping
+styled_df = df.style.map(color_decision, subset=['Decision'])
+st.dataframe(styled_df, use_container_width=True)
 
-
-# Sidebar Refresh
 st.sidebar.info("System Refreshes Every 15 Minutes")
-import streamlit as st
-import pandas as pd
-import numpy as np
-from services.data_fetcher import get_player_id, get_player_stats
-
-st.title("🏀 NBA Live Stats Analyzer")
-
-player_name = st.text_input("Enter Player Name (e.g., LeBron James):")
-
-if player_name:
-    pid = get_player_id(player_name)
-    if pid:
-        stats = get_player_stats(pid)
-        df = pd.DataFrame(stats)
-        
-        # Calculate key metrics
-        pts_list = [game['pts'] for game in stats]
-        mean_pts = np.mean(pts_list)
-        std_pts = np.std(pts_list)
-        
-        st.subheader(f"Stats for {player_name}")
-        st.write(f"Last 10 Games Average: {mean_pts:.2f} pts")
-        
-        # Display the table
-        st.dataframe(df[['pts', 'ast', 'reb', 'min']])
-    else:
-        st.error("Player not found.")
        
