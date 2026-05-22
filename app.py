@@ -38,7 +38,8 @@ def color_decision(val):
     return 'background-color: #e74c3c; color: white'
 
 # Display Table
-st.table(df.style.applymap(color_decision, subset=['Decision']))
+#st.dataframe(df.style.map(color_decision, subset=['Decision']))
+
 
 # Sidebar Refresh
 st.sidebar.info("System Refreshes Every 15 Minutes")
@@ -69,3 +70,4 @@ if player_name:
         st.dataframe(df[['pts', 'ast', 'reb', 'min']])
     else:
         st.error("Player not found.")
+       
