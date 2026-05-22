@@ -48,4 +48,26 @@ styled_df = df.style.map(color_decision, subset=['Decision'])
 st.dataframe(styled_df, use_container_width=True)
 
 st.sidebar.info("System Refreshes Every 15 Minutes")
+def calculate_edge(win_prob, decimal_odds):
+    """
+    win_prob: Your model's predicted probability (0.0 to 1.0)
+    decimal_odds: The payout odds from the book (e.g., 1.91 for -110)
+    """
+    # Expected Value = (Probability of Win * Profit) - (Probability of Loss * Stake)
+    ev = (win_prob * (decimal_odds - 1)) - (1 - win_prob)
+    return ev * 100  # Return as percentage
+
+# Example Usage:
+# If you think LeBron has a 60% chance to go Over 25.5 points
+# and the book offers 1.91 odds:
+edge = calculate_edge(0.60, 1.91) 
+# If edge > 0, it's a +EV play.def get_ai_rationale(row):
+    if row['Edge_Percentage'] > 5:
+        return "✅ Strong Play: Model shows 5%+ edge over market."
+    elif row['Edge_Percentage'] > 0:
+        return "⚠️ Lean: Positive edge, but within margin of error."
+    else:
+        return "❌ Stay Away: No statistical advantage found."
+
+df['Advice'] = df.apply(get_ai_rationale, axis=1)
        
