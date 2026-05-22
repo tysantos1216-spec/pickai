@@ -41,13 +41,4 @@ with col2:
     fig = px.scatter(df, x="Book_Line", y="Model_Avg", color="Advice", 
                      hover_data=['Player'], title="Projection vs. Market Line")
     st.plotly_chart(fig, use_container_width=True)
-    def calculate_edge(model_avg, book_line):
-    return ((model_avg - book_line) / book_line) * 100
-
-def get_advice(row):
-    # Professional threshold: only highlight high-conviction value
-    if row['Edge_Pct'] > 8: 
-        return "✅ Strong Play"
-    elif row['Edge_Pct'] > 3: 
-        return "⚠️ Lean"
-    return "❌ Pass"
+    
