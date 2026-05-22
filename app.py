@@ -1,6 +1,3 @@
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import streamlit as st
 import pandas as pd
 from utils import get_advice
@@ -55,3 +52,35 @@ def get_advice(row):
     elif row['Edge_Pct'] > 0:
         return "⚠️ Lean"
     return "❌ No Edge"
+pickai/
+├── app.py              # Main dashboard UI
+├── utils.py            # Math logic and helper functions
+├── requirements.txt    # streamlit, pandas, numpy, requests, plotly
+└── .streamlit/
+    └── secrets.toml    # Your API keys (never commit this to GitHub!)
+    prize-picks-analyzer/
+├── .streamlit/             # Configuration folder
+│   └── config.toml         # Streamlit settings (themes, etc.)
+├── pages/                  # Folder for additional app pages
+│   └── 1_Analytics.py      # Example secondary page
+├── services/               # Backend logic and API interaction
+│   └── data_fetcher.py     # Scripts to pull data from APIs
+├── utils/                  # Helper functions (math, formulas)
+│   └── calculations.py     # Your EV and Probability formulas
+├── .gitignore              # Prevents uploading venv, secrets, etc.
+├── app.py                  # MAIN entry point (Home page)
+├── requirements.txt        # Dependencies list
+└── README.md               # Project documentation
+
+prize-picks-analyzer/
+├── app.py              # Your main "Home" page
+├── pages/              # Folder for extra pages
+│   ├── 2_Analytics.py  # This will automatically show up as "Analytics" in your sidebar
+│   └── 3_Settings.py   # This will automatically show up as "Settings"
+├── requirements.txt
+└── .gitignore
+
+streamlit
+pandas
+numpy
+requests
