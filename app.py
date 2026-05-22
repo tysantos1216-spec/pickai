@@ -1,17 +1,14 @@
 import streamlit as st
 import pandas as pd
-from utils import calculate_edge, get_advice
-import plotly.express as px
+from utils import get_advice
 
 st.set_page_config(page_title="Prop Edge Analyzer", layout="wide")
-
 st.title("🏀 NBA Prop Edge Identifier")
 
-# --- DATA FETCHING ---
+# --- DATA LAYER ---
 @st.cache_data(ttl=900)
 def load_data():
-    # Replace this with your actual API call using st.secrets["API_KEY"]
-    # Example: response = requests.get(URL, headers={"Authorization": st.secrets["API_KEY"]})
+    # In a real app, use requests.get() here to fetch live JSON
     data = {
         "Player": ["LeBron James", "Jayson Tatum", "Stephen Curry", "Luka Dončić"],
         "Book_Line": [25.5, 8.5, 29.5, 9.5],
@@ -25,20 +22,33 @@ def load_data():
 
 df = load_data()
 
-# --- UI LAYER ---
-col1, col2 = st.columns([1, 3])
+# --- PROFESSIONAL DASHBOARD ---
+col1, col2, col3 = st.columns(3)
+# Show top play metrics
+best_play = df.loc[df['Edge_Pct'].idxmax()]
+col1.metric("Top Edge Play", best_play['Player'], f"{best_play['Edge_Pct']:.1f}% Edge")
 
-with col1:
-    st.subheader("Filter Opportunities")
-    min_edge = st.slider("Min Edge %", 0.0, 20.0, 5.0)
-    filtered_df = df[df['Edge_Pct'] >= min_edge]
+# Filter for the best opportunities
+st.subheader("High-Value Prop Opportunities")
+st.dataframe(
+    df.sort_values(by='Edge_Pct', ascending=False),
+    column_config={
+        "Edge_Pct": st.column_config.NumberColumn("Edge %", format="%.2f%%"),
+        "Advice": st.column_config.TextColumn("Status")
+    },
+    use_container_width=True
+)# utils.py
+def calculate_implied_prob(american_odds):
+    """Converts American odds to percentage probability."""
+    if american_odds > 0:
+        return 100 / (american_odds + 100) * 100
+    else:
+        return abs(american_odds) / (abs(american_odds) + 100) * 100
 
-with col2:
-    st.subheader("Live Prop Dashboard")
-    st.dataframe(filtered_df, use_container_width=True)
-    
-    # Interactive Visualization
-    fig = px.scatter(df, x="Book_Line", y="Model_Avg", color="Advice", 
-                     hover_data=['Player'], title="Projection vs. Market Line")
-    st.plotly_chart(fig, use_container_width=True)
-    
+def get_advice(row):
+    # Threshold: Only look for plays with an edge > 5%
+    if row['Edge_Pct'] > 5:
+        return "✅ Strong Value"
+    elif row['Edge_Pct'] > 0:
+        return "⚠️ Lean"
+    return "❌ No Edge"

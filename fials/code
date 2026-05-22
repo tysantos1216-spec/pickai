@@ -1,0 +1,6 @@
+pickai/
+├── app.py              # Main dashboard UI
+├── utils.py            # Math logic and helper functions
+├── requirements.txt    # streamlit, pandas, numpy, requests, plotly
+└── .streamlit/
+    └── secrets.toml    # Your API keys (never commit this to GitHub!)
